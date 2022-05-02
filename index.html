@@ -1,0 +1,121 @@
+<script>
+    const sample_names = [
+        [
+            // "CYCdh_K4-ClHat02.wav",
+            "CYCdh_K4-ClHat03.wav"
+        ],
+        [
+            // "CYCdh_K4-Kick01.wav",
+            "CYCdh_K4-Kick02.wav",
+            "CYCdh_K4-Kick03.wav",
+            // "CYCdh_K4-Kick04.wav",
+            // "CYCdh_K4-Kick05.wav"
+        ],
+        [
+            // "CYCdh_K4-Snr04.wav",
+            // "CYCdh_K4-Snr05.wav",
+            "CYCdh_K4-Snr06.wav",
+            "CYCdh_K4-Snr07.wav",
+            // "CYCdh_K4-Snr08.wav",
+            // "CYCdh_K4-Snr09.wav",
+            // "CYCdh_K4-Snr10.wav",
+            // "CYCdh_K4-Snr01.wav",
+            // "CYCdh_K4-Snr11.wav",
+            // "CYCdh_K4-Snr02.wav",
+            // "CYCdh_K4-Snr03.wav"
+        ],
+        [
+            // "CYCdh_K4-Trash03.wav",
+            "CYCdh_K4-Trash04.wav",
+            // "CYCdh_K4-Trash05.wav",
+            // "CYCdh_K4-Trash06.wav",
+            // "CYCdh_K4-Trash07.wav",
+            // "CYCdh_K4-Trash08.wav",
+            // "CYCdh_K4-Trash09.wav",
+            // "CYCdh_K4-Trash10.wav",
+            // "CYCdh_K4-Trash01.wav",
+            // "CYCdh_K4-Trash02.wav"
+        ]
+    ]
+
+    const samples = sample_names.map(l => l.map(x => new Audio(`samples/${x}`)))
+
+    function logistic(x, r) {
+        return r * x * (1 - x)
+    }
+
+    function discretise(x, n) {
+        return Math.min(Math.max(0, Math.floor(x * n)), n - 1)
+    }
+
+    function play_random(choices) {
+        choices[discretise(Math.random(), choices.length)].cloneNode(true).play()
+    }
+
+    class App {
+        constructor(x, interval = null) {
+            this.x = x;
+            this.interval = interval;
+        }
+
+        stop() {
+            clearInterval(this.interval)
+        }
+
+        play() {
+            this.stop()
+            this.interval = setInterval(() => { 
+                document.getElementById("x").value = this.x
+                let r = document.getElementById("r-input").value
+                let discretised = discretise(this.x, samples.length)
+                document.getElementById("discretised").value = discretised
+                console.log(`x = ${this.x} => ${discretised}, r => ${r}`)
+                play_random(samples[discretised])
+                document.getElementById("r-output").value = r
+                this.x = logistic(this.x, r) 
+            }, document.getElementById("ms-wait").value)
+            document.getElementById("ms-wait-output").value = document.getElementById("ms-wait").value
+        }
+    }
+
+    let app = new App(Math.random())
+</script>
+
+<input class="small-display" id="x" disabled></input>
+<input class="small-display" id="discretised" disabled></input>
+
+<hr />
+
+<button onclick="app.play()">Play</button>
+<button onclick="app.stop()">Stop</button>
+
+<hr />
+
+<div class="slider-with-reading">
+    <label>chaosiness</label>
+    <input type="range" min="2.7" max="4" value="3.8" step="0.01" class="slider" id="r-input">
+    <input class="small-display" id="r-output" disabled />
+</div>
+
+<div class="slider-with-reading">
+    <label>speed</label>
+    <input type="range" min="0" max="1000" value="113" step="1" class="slider" id="ms-wait" onchange="app.play()" style="transform: rotateY(180deg);">
+    <input class="small-display" id="ms-wait-output" disabled />
+</div>
+
+<style>
+    .small-display {
+        width: 100px;
+    }   
+    .slider-with-reading {
+        display: flex;
+    }
+
+    .slider {
+        flex: 1;
+    }
+
+    label {
+        width: 75px;
+    }
+</style>
